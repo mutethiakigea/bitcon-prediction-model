@@ -1,0 +1,41 @@
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+
+# Load the historical data for the price of Bitcoin
+df = pd.read_csv('bitcoin_price_data.csv')
+
+# Preprocess the data by converting the date column to a datetime and setting it as the index
+df['date'] = pd.to_datetime(df['date'])
+df.set_index('date', inplace=True)
+
+# Split the data into training and test sets
+train_data = df[:'2020-01-01']
+test_data = df['2020-01-01':]
+
+# Train a linear regression model on the training data
+model = LinearRegression()
+X_train = train_data.index.values.reshape(-1, 1)
+y_train = train_data['price'].values
+model.fit(X_train, y_train)
+
+# Make predictions on the test data and evaluate the model's performance
+X_test = test_data.index.values.reshape(-1, 1)
+y_test = test_data['price'].values
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+print(f'Mean squared error: {mse:.2f}')
+
+# Make predictions for the next 30 days
+num_days = 30
+future_dates = pd.date_range(start='2022-01-01', periods=num_days)
+future_dates_X = future_dates.values.reshape(-1, 1)
+future_prices = model.predict(future_dates_X)
+
+# Visualize the predictions
+plt.plot(future_dates, future_prices)
+plt.xlabel('Date')
+plt.ylabel('Price')
+plt.title('Bitcoin Price Prediction for Next 30 Days')
+plt.show()
